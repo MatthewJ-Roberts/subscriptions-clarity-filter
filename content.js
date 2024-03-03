@@ -87,6 +87,29 @@ function extensionHandler() {
   });
 }
 
+// Check if the feature flags are undefined in the storage
+chrome.storage.sync.get(['isEnabled', 'isEnabledStreamVods', 'isEnabledScheduledStreams', 'isEnabledWatchedVideos'], function(data) {
+  if (typeof data.isEnabled === 'undefined') {
+      // Set the default value of isEnabled to true
+      chrome.storage.sync.set({ isEnabled: true });
+  }
+
+  if (typeof data.isEnabledStreamVods === 'undefined') {
+      // Set the default value of streamVodsEnabled to true
+      chrome.storage.sync.set({ isEnabledStreamVods: true });
+  }
+
+  if (typeof data.isEnabledScheduledStreams === 'undefined') {
+      // Set the default value of scheduledStreamsEnabled to true
+      chrome.storage.sync.set({ isEnabledScheduledStreams: true });
+  }
+
+  if (typeof data.isEnabledWatchedVideos === 'undefined') {
+      // Set the default value of watchedVideosEnabled to true
+      chrome.storage.sync.set({ isEnabledWatchedVideos: true });
+  }
+});
+
 // Execute the function immediately
 extensionHandler();
 
