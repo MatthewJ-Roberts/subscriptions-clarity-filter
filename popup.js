@@ -24,11 +24,13 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.sync.set({ 'isEnabledWatchedVideos': toggleWatchedVideos.checked });
   });
 
-  // Set the initial state of the extension switch and checkboxes
+  // Fetches the state of the checkboxes when the user opens the extension
   chrome.storage.sync.get(['isEnabled', 'isEnabledStreamVods', 'isEnabledScheduledStreams', 'isEnabledWatchedVideos'], function (data) {
-    toggleExtension.checked = data.isEnabled;
-    toggleStreamVods.checked = data.isEnabledStreamVods;
-    toggleScheduledStreams.checked = data.isEnabledScheduledStreams;
-    toggleWatchedVideos.checked = data.isEnabledWatchedVideos;
+    // This conditional is used so that the state of the checkboxes is checked after the user installs the extension, while
+    // still allowing the user to check/uncheck the checkboxes themselves
+    toggleExtension.checked = data.isEnabled !== false;
+    toggleStreamVods.checked = data.isEnabledStreamVods !== false;
+    toggleScheduledStreams.checked = data.isEnabledScheduledStreams !== false;
+    toggleWatchedVideos.checked = data.isEnabledWatchedVideos !== false;
   });
 });
