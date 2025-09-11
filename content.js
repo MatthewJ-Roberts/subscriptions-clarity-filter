@@ -1,5 +1,9 @@
 function hideStreamVods() {
   const oldStreams = document.querySelectorAll(
+    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.yt-lockup-metadata-view-model__text-container > div > yt-content-metadata-view-model > div:nth-child(2) > span:nth-child(3)"
+  );
+
+  const oldStreamsLegacy = document.querySelectorAll(
     'span.inline-metadata-item.style-scope.ytd-video-meta-block'
   );
 
@@ -10,15 +14,35 @@ function hideStreamVods() {
       removeVideo(item, 'streamed');
     }
   });
+
+  // Removes stream vods (legacy method)
+  oldStreamsLegacy.forEach((item) => {
+    const textContent = item.textContent.trim();
+    if (textContent.includes('Streamed')) {
+      removeVideo(item, 'streamed');
+    }
+  });
 }
 
 function hideScheduledStreams() {
-  const oldStreams = document.querySelectorAll(
+  const scheduledStreams = document.querySelectorAll(
+    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.yt-lockup-metadata-view-model__text-container > div > yt-content-metadata-view-model > div:nth-child(2) > span"
+  );
+
+  const scheduledStreamsLegacy = document.querySelectorAll(
     'span.inline-metadata-item.style-scope.ytd-video-meta-block'
   );
 
   // Removes scheduled streams
-  oldStreams.forEach((item) => {
+  scheduledStreams.forEach((item) => {
+    const textContent = item.textContent.trim();
+    if (textContent.includes('Scheduled')) {
+      removeVideo(item, 'scheduled');
+    }
+  });
+
+  // Removes scheduled streams (legacy method)
+  scheduledStreamsLegacy.forEach((item) => {
     const textContent = item.textContent.trim();
     if (textContent.includes('Scheduled')) {
       removeVideo(item, 'scheduled');
@@ -28,11 +52,22 @@ function hideScheduledStreams() {
 
 function hideWatchedVideos() {
   const watchedVideos = document.querySelectorAll(
+    "#content > yt-lockup-view-model > div > a > yt-thumbnail-view-model > yt-thumbnail-bottom-overlay-view-model > yt-thumbnail-overlay-progress-bar-view-model > div > div"
+  );
+
+  const watchedVideosLegacy = document.querySelectorAll(
     'div#progress.style-scope.ytd-thumbnail-overlay-resume-playback-renderer'
   );
 
   // Removes previously watched videos
   watchedVideos.forEach((item) => {
+    if (item.style.width && parseFloat(item.style.width) >= 90) {
+      removeVideo(item, 'watched');
+    }
+  });
+
+  // Removes previously watched videos (legacy method)
+  watchedVideosLegacy.forEach((item) => {
     if (item.style.width && parseFloat(item.style.width) >= 90) {
       removeVideo(item, 'watched');
     }
