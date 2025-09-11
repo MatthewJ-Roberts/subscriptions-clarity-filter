@@ -51,6 +51,18 @@ function hideScheduledStreams() {
 }
 
 function hideWatchedVideos() {
+  const liveStream = document.querySelectorAll(
+    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.yt-lockup-metadata-view-model__text-container > div > yt-content-metadata-view-model > div:nth-child(2) > span"
+  )
+
+  // Makes sure the watched video isn't a livestream
+  liveStream.forEach((item) => {
+    const textContent = item.textContent.trim();
+    if (textContent.includes('watching')) {
+      return
+    }
+  });
+
   const watchedVideos = document.querySelectorAll(
     "#content > yt-lockup-view-model > div > a > yt-thumbnail-view-model > yt-thumbnail-bottom-overlay-view-model > yt-thumbnail-overlay-progress-bar-view-model > div > div"
   );
