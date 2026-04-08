@@ -1,6 +1,6 @@
 function hideStreamVods() {
   const oldStreams = document.querySelectorAll(
-    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.yt-lockup-metadata-view-model__text-container > div > yt-content-metadata-view-model > div:nth-child(2) > span:nth-child(3)"
+    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.ytLockupMetadataViewModelTextContainer > div > yt-content-metadata-view-model > div:nth-child(2) > span:nth-child(3)"
   );
 
   const oldStreamsLegacy = document.querySelectorAll(
@@ -26,7 +26,7 @@ function hideStreamVods() {
 
 function hideScheduledStreams() {
   const scheduledStreams = document.querySelectorAll(
-    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.yt-lockup-metadata-view-model__text-container > div > yt-content-metadata-view-model > div:nth-child(2) > span"
+    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.ytLockupMetadataViewModelTextContainer > div > yt-content-metadata-view-model > div:nth-child(2) > span"
   );
 
   const scheduledStreamsLegacy = document.querySelectorAll(
