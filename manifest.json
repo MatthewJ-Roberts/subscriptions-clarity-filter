@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Subcriptions Clarity Filter",
   "version": "1.0",
   "description": "A simple extension that hides stream vods, scheduled streams, and previously watched videos in the Subscriptions Feed.",
@@ -9,7 +9,7 @@
       "js": ["content.js"]
     }
   ],
-  "browser_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
