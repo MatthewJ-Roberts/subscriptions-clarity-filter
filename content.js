@@ -86,6 +86,15 @@ function hideWatchedVideos() {
   });
 }
 
+function hideHomePageClutter() {
+  // Selects EVERY rich-section-renderer on the page
+  const sections = document.querySelectorAll('ytd-rich-section-renderer');
+  if (sections.length > 0) {
+    sections.forEach(section => section.remove());
+    console.log(`🧹 Removed ${sections.length} clutter sections (ads, premium offers, explore topics, etc.)`);
+  }
+}
+
 function getTitle(item) {
   // Get the <yt-formatted-string> element
   let titleData = item.querySelector(
@@ -109,12 +118,24 @@ function removeVideo(item, message) {
 // Handles whether or not the extension should hide videos
 function extensionHandler() {
   chrome.storage.sync.get('isEnabled', function (data) {
-    if (data.isEnabled) {
-      const currentUrl = window.location.href;
-      // Prevents the extension from running when on any page other than Subscriptions
-      if (!currentUrl.includes('/subscriptions')) {
-        return;
-      }
+    if (!data.isEnabled) return;
+
+    const currentUrl = window.location.href;
+    const path = window.location.pathname;
+
+    // Hide clutter sections on Home page and Subscriptions ---
+    // Runs on the main root ("/")
+    if ((path === '/')) {
+      chrome.storage.sync.get('isEnabledClutter', function (clutterData) {
+        if (clutterData.isEnabledClutter) {
+          hideHomePageClutter();
+        }
+      });
+    }
+
+    // --- Existing logic: Hide Stream VODs, Scheduled, Watched ---
+    // Only runs on the Subscriptions page
+    if (currentUrl.includes('/subscriptions')) {
       chrome.storage.sync.get('isEnabledStreamVods', function (data) {
         if (data.isEnabledStreamVods) {
           hideStreamVods();
@@ -135,7 +156,7 @@ function extensionHandler() {
 }
 
 // Check if the feature flags are undefined in the storage
-chrome.storage.sync.get(['isEnabled', 'isEnabledStreamVods', 'isEnabledScheduledStreams', 'isEnabledWatchedVideos'], function(data) {
+chrome.storage.sync.get(['isEnabled', 'isEnabledStreamVods', 'isEnabledScheduledStreams', 'isEnabledWatchedVideos', 'isEnabledClutter'], function(data) {
   if (typeof data.isEnabled === 'undefined') {
       // Set the default value of isEnabled to true
       chrome.storage.sync.set({ isEnabled: true });
@@ -154,6 +175,10 @@ chrome.storage.sync.get(['isEnabled', 'isEnabledStreamVods', 'isEnabledScheduled
   if (typeof data.isEnabledWatchedVideos === 'undefined') {
       // Set the default value of watchedVideosEnabled to true
       chrome.storage.sync.set({ isEnabledWatchedVideos: true });
+  }
+
+  if (typeof data.isEnabledClutter === 'undefined') {
+    chrome.storage.sync.set({ isEnabledClutter: true });
   }
 });
 
