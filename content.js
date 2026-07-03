@@ -95,6 +95,22 @@ function hideHomePageClutter() {
   }
 }
 
+function hideMostRelevant() {
+  // Find all rich-section-renderers on the subscriptions page
+  const sections = document.querySelectorAll('ytd-rich-section-renderer');
+  
+  sections.forEach(section => {
+    // Look for the "#title" element ONLY inside this specific section
+    const titleElement = section.querySelector('#title');
+    
+    // Check if it exists and its text matches "Most relevant"
+    if (titleElement && titleElement.textContent.trim() === 'Most relevant') {
+      section.remove();
+      console.log('🧹 Removed "Most relevant" section');
+    }
+  });
+}
+
 function getTitle(item) {
   // Get the <yt-formatted-string> element
   let titleData = item.querySelector(
@@ -151,35 +167,40 @@ function extensionHandler() {
           hideWatchedVideos();
         }
       });
+      chrome.storage.sync.get('isEnabledMostRelevant', function (data) {
+        if (data.isEnabledMostRelevant) {
+          hideMostRelevant();
+        }
+      });
     }
   });
 }
 
-// Check if the feature flags are undefined in the storage
+// Check if the feature flags are undefined in the storage, setting them as "true"
 chrome.storage.sync.get(['isEnabled', 'isEnabledStreamVods', 'isEnabledScheduledStreams', 'isEnabledWatchedVideos', 'isEnabledClutter'], function(data) {
   if (typeof data.isEnabled === 'undefined') {
-      // Set the default value of isEnabled to true
       chrome.storage.sync.set({ isEnabled: true });
   }
 
   if (typeof data.isEnabledStreamVods === 'undefined') {
-      // Set the default value of streamVodsEnabled to true
       chrome.storage.sync.set({ isEnabledStreamVods: true });
   }
 
   if (typeof data.isEnabledScheduledStreams === 'undefined') {
-      // Set the default value of scheduledStreamsEnabled to true
       chrome.storage.sync.set({ isEnabledScheduledStreams: true });
   }
 
   if (typeof data.isEnabledWatchedVideos === 'undefined') {
-      // Set the default value of watchedVideosEnabled to true
       chrome.storage.sync.set({ isEnabledWatchedVideos: true });
   }
 
   if (typeof data.isEnabledClutter === 'undefined') {
     chrome.storage.sync.set({ isEnabledClutter: true });
   }
+
+  if (typeof data.isEnabledMostRelevant === 'undefined') {
+  chrome.storage.sync.set({ isEnabledMostRelevant: true });
+}
 });
 
 // Execute the function immediately
