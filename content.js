@@ -1,110 +1,92 @@
+function getSubscriptionLockups() {
+  return Array.from(document.querySelectorAll('#content yt-lockup-view-model'));
+}
+
+function getMetadataText(container) {
+  if (!container) return '';
+
+  return Array.from(container.querySelectorAll('span, yt-formatted-string'))
+    .map((el) => el.textContent?.trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
+function getLockupMetadataText(lockup) {
+  const metadata = lockup.querySelector('yt-content-metadata-view-model, yt-lockup-metadata-view-model');
+  return getMetadataText(metadata).toLowerCase();
+}
+
+function hideByMetadataKeyword(keyword, label) {
+  getSubscriptionLockups().forEach((lockup) => {
+    const textContent = getLockupMetadataText(lockup);
+    if (textContent.includes(keyword.toLowerCase())) {
+      removeVideo(lockup, label);
+    }
+  });
+}
+
 function hideStreamVods() {
-  const oldStreams = document.querySelectorAll(
-    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.ytLockupMetadataViewModelTextContainer > div > yt-content-metadata-view-model > div:nth-child(2) > span:nth-child(3)"
-  );
-
-  const oldStreamsLegacy = document.querySelectorAll(
-    'span.inline-metadata-item.style-scope.ytd-video-meta-block'
-  );
-
-  // Removes stream vods
-  oldStreams.forEach((item) => {
-    const textContent = item.textContent.trim();
-    if (textContent.includes('Streamed')) {
-      removeVideo(item, 'streamed');
-    }
-  });
-
-  // Removes stream vods (legacy method)
-  oldStreamsLegacy.forEach((item) => {
-    const textContent = item.textContent.trim();
-    if (textContent.includes('Streamed')) {
-      removeVideo(item, 'streamed');
-    }
-  });
+  hideByMetadataKeyword('streamed', 'streamed');
 }
 
 function hideScheduledStreams() {
-  const scheduledStreams = document.querySelectorAll(
-    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.ytLockupMetadataViewModelTextContainer > div > yt-content-metadata-view-model > div:nth-child(2) > span"
-  );
+  hideByMetadataKeyword('scheduled', 'scheduled');
+}
 
-  const scheduledStreamsLegacy = document.querySelectorAll(
-    'span.inline-metadata-item.style-scope.ytd-video-meta-block'
-  );
+function getElementWidth(element) {
+  if (!element) return 0;
 
-  // Removes scheduled streams
-  scheduledStreams.forEach((item) => {
-    const textContent = item.textContent.trim();
-    if (textContent.includes('Scheduled')) {
-      removeVideo(item, 'scheduled');
-    }
-  });
+  const styleWidth = element.style?.width;
+  if (styleWidth) {
+    const parsed = parseFloat(styleWidth);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
 
-  // Removes scheduled streams (legacy method)
-  scheduledStreamsLegacy.forEach((item) => {
-    const textContent = item.textContent.trim();
-    if (textContent.includes('Scheduled')) {
-      removeVideo(item, 'scheduled');
-    }
-  });
+  const computedWidth = window.getComputedStyle(element).width;
+  const parsedComputed = parseFloat(computedWidth);
+  return Number.isFinite(parsedComputed) ? parsedComputed : 0;
 }
 
 function hideWatchedVideos() {
-  const liveStream = document.querySelectorAll(
-    "#content > yt-lockup-view-model > div > div > yt-lockup-metadata-view-model > div.yt-lockup-metadata-view-model__text-container > div > yt-content-metadata-view-model > div:nth-child(2) > span"
-  )
+  getSubscriptionLockups().forEach((lockup) => {
+    const metadataText = getLockupMetadataText(lockup);
 
-  // Makes sure the watched video isn't a livestream
-  liveStream.forEach((item) => {
-    const textContent = item.textContent.trim();
-    if (textContent.includes('watching')) {
-      return
+    // Skip live-content cards that are still being watched live
+    if (metadataText.includes('watching')) {
+      return;
     }
-  });
 
-  const watchedVideos = document.querySelectorAll(
-    "#content > yt-lockup-view-model > div > a > yt-thumbnail-view-model > yt-thumbnail-bottom-overlay-view-model > yt-thumbnail-overlay-progress-bar-view-model > div > div"
-  );
+    const progressBar = lockup.querySelector('yt-thumbnail-overlay-progress-bar-view-model');
+    const progressFill = progressBar?.querySelector('div');
 
-  const watchedVideosLegacy = document.querySelectorAll(
-    'div#progress.style-scope.ytd-thumbnail-overlay-resume-playback-renderer'
-  );
-
-  // Removes previously watched videos
-  watchedVideos.forEach((item) => {
-    if (item.style.width && parseFloat(item.style.width) >= 90) {
-      removeVideo(item, 'watched');
-    }
-  });
-
-  // Removes previously watched videos (legacy method)
-  watchedVideosLegacy.forEach((item) => {
-    if (item.style.width && parseFloat(item.style.width) >= 90) {
-      removeVideo(item, 'watched');
+    if (progressFill && getElementWidth(progressFill) >= 90) {
+      removeVideo(progressFill, 'watched');
     }
   });
 }
 
+function getSectionTitle(section) {
+  if (!section) return '';
+
+  const titleElement = section.querySelector('#title, h2, h3, yt-formatted-string, .title');
+  return titleElement?.textContent?.trim() || '';
+}
+
 function hideHomePageClutter() {
-  // Selects EVERY rich-section-renderer on the page
-  const sections = document.querySelectorAll('ytd-rich-section-renderer');
+  const sections = document.querySelectorAll('ytd-rich-section-renderer, ytd-shelf-renderer');
   if (sections.length > 0) {
-    sections.forEach(section => section.remove());
+    sections.forEach((section) => section.remove());
     console.log(`🧹 Removed ${sections.length} clutter sections (ads, premium offers, explore topics, etc.)`);
   }
 }
 
 function hideMostRelevant() {
-  // Find all rich-section-renderers on the subscriptions page
-  const sections = document.querySelectorAll('ytd-rich-section-renderer');
-  
-  sections.forEach(section => {
-    // Look for the "#title" element ONLY inside this specific section
-    const titleElement = section.querySelector('#title');
-    
-    // Check if it exists and its text matches "Most relevant"
-    if (titleElement && titleElement.textContent.trim() === 'Most relevant') {
+  const sections = document.querySelectorAll('ytd-rich-section-renderer, ytd-shelf-renderer');
+
+  sections.forEach((section) => {
+    const titleText = getSectionTitle(section).toLowerCase();
+
+    if (titleText.includes('most relevant')) {
       section.remove();
       console.log('🧹 Removed "Most relevant" section');
     }
@@ -112,14 +94,12 @@ function hideMostRelevant() {
 }
 
 function getTitle(item) {
-  // Get the <yt-formatted-string> element
-  let titleData = item.querySelector(
-    'ytd-rich-item-renderer yt-formatted-string#video-title'
-  );
+  if (!item) return '';
 
-  // Get the value of the aria-label attribute
-  let title = titleData.getAttribute('aria-label');
-  return title;
+  const titleData = item.querySelector('yt-formatted-string#video-title, ytd-rich-item-renderer yt-formatted-string#video-title');
+  if (!titleData) return '';
+
+  return titleData.getAttribute('aria-label') || titleData.textContent.trim();
 }
 
 // Removes video
